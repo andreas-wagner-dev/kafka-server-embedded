@@ -1,13 +1,7 @@
 package com.kafka.embedded;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -18,8 +12,7 @@ import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
 
 /**
- * Class to run an embedded server instance.
- *
+ * Embedded KAFKA server.
  */
 public class EmbeddedKafkaServer {
 
@@ -66,14 +59,13 @@ public class EmbeddedKafkaServer {
 	}
 
 	/**
-	 * Starts a Kafka server instance. A ZooKepper server instance is required for
-	 * Kafka and gets automatically started before Kafka.
+	 * Starts a KAFKA server and automatically a ZooKepper server instance which is
+	 * required to run before started KAFKA.
 	 *
-	 * @throws FileNotFoundException
-	 * @throws IOException
+	 * @throws IOException in case startup is unsuccessful
 	 */
-	public void startup() throws FileNotFoundException, IOException {
-		// Clean kafka temporary work directory before running
+	public void startup() throws IOException {
+		// Clean KAFKA temporary work directory before running
 		File kafkaTmpRootDir = new File(System.getProperty("java.io.tmpdir"), KAFKA_RELATIVE_WORKDIR);
 		if (kafkaTmpRootDir.exists()) {
 			try {
@@ -85,19 +77,19 @@ public class EmbeddedKafkaServer {
 		} else {
 			kafkaTmpRootDir.mkdir();
 		}
-		// Start ZooKeeper before Kafka
+		// start ZooKeeper before KAFKA
 		startupZookeeper();
-		// Kafka temporary directory
+		// KAFKA temporary directory
 		File kafkaTmpDir = new File(System.getProperty("java.io.tmpdir"),
 				KAFKA_RELATIVE_WORKDIR + "/kafka_log-" + UUID.randomUUID());
 		kafkaTmpDir.mkdir();
 		String tempPath = kafkaTmpDir.getAbsolutePath();
 		System.out.println("Embedded Kafka temporary work directory: " + tempPath);
-		// Load Kafka Properties
+		// load KAFKA properties
 		kafkaProperties.put("log.dirs", tempPath);
 		kafkaProperties.put("log.dir", tempPath);
 		kafkaProperties.put("kafka.logs.dir", tempPath);
-		// Set System Properties required by Kafka
+		// set system properties required by KAFKA
 		System.setProperty("kafka.logs.dir", tempPath);
 		KafkaConfig config = new KafkaConfig(kafkaProperties);
 		kafkaServer = new KafkaServerStartable(config);
@@ -108,19 +100,18 @@ public class EmbeddedKafkaServer {
 	/**
 	 * Starts a ZooKeeper instance.
 	 *
-	 * @throws FileNotFoundException
-	 * @throws IOException
+	 * @throws IOException in case startup is unsuccessful
 	 */
-	private void startupZookeeper() throws FileNotFoundException, IOException {
+	private void startupZookeeper() throws IOException {
 		// ZooKeeper temporary directory
 		File zookeeperTmpDir = new File(System.getProperty("java.io.tmpdir"),
 				KAFKA_RELATIVE_WORKDIR + "/tmp_zookeeper");
-		// Create the folder
+		// create the folder
 		zookeeperTmpDir.mkdir();
-		// Load ZooKeeper Properties
-		// Override the data directory in the loaded ZooKeeper Properties
+		// load ZooKeeper properties
+		// override the data directory in the loaded ZooKeeper properties
 		zkProperties.put("dataDir", zookeeperTmpDir.getAbsolutePath());
-		// Convert Properties to ZooKeeper config
+		// convert properties to ZooKeeper configuration
 		QuorumPeerConfig quorumConfiguration = new QuorumPeerConfig();
 		try {
 			quorumConfiguration.parseProperties(zkProperties);
@@ -129,7 +120,7 @@ public class EmbeddedKafkaServer {
 		}
 		final ServerConfig configuration = new ServerConfig();
 		configuration.readFrom(quorumConfiguration);
-		// Start ZooKeeper in a Thread
+		// start ZooKeeper in a Thread
 		zooKeeperServer = new EmbeddedZooKeeperServer();
 		new Thread(new Runnable() {
 
@@ -147,9 +138,9 @@ public class EmbeddedKafkaServer {
 	}
 
 	/**
-	 * Shutdown and cleanup of Kafka. Also deletes temporary folders.
+	 * Shutdown and cleanup of KAFKA. Also deletes temporary folders.
 	 *
-	 * @throws IOException
+	 * @throws IOException in case shutdown is unsuccessful
 	 */
 	public void shutdown() throws IOException {
 		kafkaServer.shutdown();
@@ -170,6 +161,12 @@ public class EmbeddedKafkaServer {
 		return running;
 	}
 
+	/**
+	 * Cleans a directory without deleting it.
+	 *
+	 * @param directoryToBeCleaned directory to clean
+	 * @throws IOException in case cleaning is unsuccessful
+	 */
 	void cleanDir(File directoryToBeCleaned) throws IOException {
 		File[] allContents = directoryToBeCleaned.listFiles();
 		if (allContents != null) {
@@ -189,28 +186,6 @@ public class EmbeddedKafkaServer {
 			}
 		}
 		return directoryToBeDeleted.delete();
-	}
-
-	/**
-	 * Cleans a directory without deleting it.
-	 *
-	 * @param directory directory to clean
-	 * @throws IOException in case cleaning is unsuccessful
-	 */
-	public static void cleanDirectory(File directory) throws IOException {
-		Files.walkFileTree(directory.toPath(), new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-				Files.delete(dir);
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				Files.delete(file);
-				return FileVisitResult.CONTINUE;
-			}
-		});
 	}
 
 }

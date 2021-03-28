@@ -9,7 +9,6 @@ import com.kafka.embedded.main.MainServer;
 
 /**
  * Class to run an embedded server instance.
- *
  */
 public class EmbeddedKafkaMain {
 
