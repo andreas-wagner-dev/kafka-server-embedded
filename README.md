@@ -2,7 +2,7 @@
 
 Demonstration how to use all components of Kafka API (producer, cunsumer, including server) embedded in a single java progaram.
 
-```
+```java
 package com.kafka.embedded;
 
 import java.io.IOException;
