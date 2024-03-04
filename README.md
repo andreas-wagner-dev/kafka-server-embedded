@@ -1,6 +1,6 @@
 # embedded-kafka-server
 
-Demonstration how to use all components of Kafka API (producer, cunsumer, inculuding server) embedded in a single java progaram.
+Demonstration how to use all components of Kafka API (producer, cunsumer, including server) embedded in a single java progaram.
 
 ```
 package com.kafka.embedded;
