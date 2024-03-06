@@ -34,16 +34,18 @@ public class EmbeddedKafkaServer {
 	}
 
 	public EmbeddedKafkaServer(Properties kafkaProperties, Properties zkProperties) {
-		this.kafkaProperties = kafkaProperties;
-		this.zkProperties = zkProperties;
+		this.kafkaProperties	= kafkaProperties;
+		this.zkProperties		= zkProperties;
 	}
 
 	static Properties getDefaultKafkaProperties() {
+		// https://docs.confluent.io/platform/current/installation/configuration/broker-configs.html
+		// https://github.com/apache/kafka/blob/trunk/config/server.properties
 		Properties kafkaProperties = new Properties();
 		kafkaProperties.put("broker.id", "0");
 		kafkaProperties.put("host.name", "localhost");
 		kafkaProperties.put("port", "9092");
-		kafkaProperties.put("zookeeper.connect", "localhost");
+		kafkaProperties.put("zookeeper.connect", "localhost:2181");
 		kafkaProperties.put("zookeeper.connection.timeout.ms", "6000");
 		kafkaProperties.put("advertised.host.name", "localhost");
 		kafkaProperties.put("group.initial.rebalance.delay.ms", "0");
@@ -52,6 +54,7 @@ public class EmbeddedKafkaServer {
 	}
 
 	static Properties getDefaultZookeeperProperties() {
+		// https://github.com/apache/kafka/blob/trunk/config/zookeeper.properties
 		Properties zkProperties = new Properties();
 		zkProperties.put("clientPort", "2181");
 		zkProperties.put("maxClientCnxns", "0");
@@ -80,8 +83,10 @@ public class EmbeddedKafkaServer {
 		// start ZooKeeper before KAFKA
 		startupZookeeper();
 		// KAFKA temporary directory
-		File kafkaTmpDir = new File(System.getProperty("java.io.tmpdir"),
-				KAFKA_RELATIVE_WORKDIR + "/kafka_log-" + UUID.randomUUID());
+		File kafkaTmpDir = new File(
+				System.getProperty("java.io.tmpdir"),
+				KAFKA_RELATIVE_WORKDIR + "/kafka_log-" + UUID.randomUUID()
+		);
 		kafkaTmpDir.mkdir();
 		String tempPath = kafkaTmpDir.getAbsolutePath();
 		System.out.println("Embedded Kafka temporary work directory: " + tempPath);
@@ -104,8 +109,10 @@ public class EmbeddedKafkaServer {
 	 */
 	private void startupZookeeper() throws IOException {
 		// ZooKeeper temporary directory
-		File zookeeperTmpDir = new File(System.getProperty("java.io.tmpdir"),
-				KAFKA_RELATIVE_WORKDIR + "/tmp_zookeeper");
+		File zookeeperTmpDir = new File(
+				System.getProperty("java.io.tmpdir"),
+				KAFKA_RELATIVE_WORKDIR + "/tmp_zookeeper"
+		);
 		// create the folder
 		zookeeperTmpDir.mkdir();
 		// load ZooKeeper properties
@@ -118,7 +125,7 @@ public class EmbeddedKafkaServer {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		final ServerConfig configuration = new ServerConfig();
+		ServerConfig configuration = new ServerConfig();
 		configuration.readFrom(quorumConfiguration);
 		// start ZooKeeper in a Thread
 		zooKeeperServer = new EmbeddedZooKeeperServer();

@@ -58,7 +58,7 @@ public class EmbeddedKafkaServerTest {
 		producer.flush();
 		System.out.println("Release Kafka Consumer.");
 		producer.close();
-		// wait for
+		// wait for 3 seconds
 		sleep(3);
 		System.out.println("Initialize Kafka Consumer.");
 		// Create the consumer using props
